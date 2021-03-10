@@ -2,6 +2,8 @@
   <div id="wrapper">
     <app-sidebar v-if="isAuth"></app-sidebar>
     <div id="content-wrapper" class="d-flex flex-column">
+        <notifications group="auth" position="top center" width="500" />
+        <notifications group="notif" position="top right" />
         <div id="content">
             <app-header v-if="isAuth"></app-header>
             <Nuxt />
@@ -18,12 +20,15 @@
   export default {
     data() {
       return {
-
+        
       }
     },
 
     computed: {
       ...mapState(['isAuth'])
+      // if(this.$auth.loggedIn) {
+      //   this.isAuth = true;
+      // }
     },
 
     components: {
@@ -32,3 +37,4 @@
     },
   }
 </script>
+

@@ -13,31 +13,27 @@
                                     </div>
                                     <form class="user">
                                         <div class="form-group">
-                                            <input type="email" class="form-control form-control-user" id="exampleInputEmail" aria-describedby="emailHelp" placeholder="Enter Email Address..." v-model="auth.email">
+                                            <!-- <input type="email" class="form-control form-control-user" id="exampleInputEmail" aria-describedby="emailHelp" placeholder="Enter Email Address..." v-model="auth.email"> -->
+                                            <input type="text" class="form-control form-control-user" id="exampleInputEmail" aria-describedby="emailHelp" placeholder="Enter Username" v-model="auth.username">
                                         </div>
                                         <div class="form-group">
                                             <input type="password" class="form-control form-control-user" id="exampleInputPassword" placeholder="Password" v-model="auth.password">
                                         </div>
                                         <a href="javascript:void(0)" @click="login" class="btn btn-primary btn-user btn-block">
-                                            Login
+                                            <span v-if="!watchLoading">Login</span>
+                                            <span v-show="watchLoading">
+                                                <i class="fas fa-circle-notch fa-spin"></i>
+                                            </span>
                                         </a>
-                                        <!-- <a href="#" class="btn btn-primary btn-user btn-block">
-                                            Login
-                                        </a> -->
-                                        <hr>
-                                        <!-- <a href="index.html" class="btn btn-google btn-user btn-block">
-                                            <i class="fab fa-google fa-fw"></i> Login with Google
-                                        </a>
-                                        <a href="index.html" class="btn btn-facebook btn-user btn-block">
-                                            <i class="fab fa-facebook-f fa-fw"></i> Login with Facebook
-                                        </a> -->
+                                        <!-- <button type="button" class="btn btn-info btn-user btn-block" @click="notify"> clickMe</button> -->
                                     </form>
                                     <hr>
-                                    <div class="text-center">
+                                    <!-- <div class="text-center">
                                         <a class="small" href="#">Forgot Password?</a>
-                                    </div>
+                                    </div> -->
                                     <div class="text-center">
-                                        <a class="small" href="#">Create an Account!</a>
+                                        <nuxt-link class="small" to="/login/register">Create an Account!</nuxt-link>
+                                        <!-- <a class="small" href="#">Create an Account!</a> -->
                                     </div>
                                 </div>
                             </div>
@@ -51,15 +47,17 @@
 
 <script>
     import { mapMutations } from 'vuex'
+    import axios from '@/plugins/axios-auth'
 
     export default {
         auth: false,
         data() {
            return {
                auth: {
-                   email: null,
+                   username: null,
                    password: null
-               }
+               },
+               loading: false,
            }
         },
 
@@ -68,24 +66,51 @@
                 this.$router.push('/')
             }
         },
+
+        computed: {
+            watchLoading() {
+                return this.loading
+            }
+        },
        
         methods: {
             ...mapMutations(['SET_IS_AUTH']),
 
            login() {
-                this.$auth.loginWith('local', {
-                    data: {
-                        email: this.auth.email,
-                        password: this.auth.password
-                    }
-                }).then(() => {
-                    console.log(this.$auth)
-                    //JIKA BERHASIL, KITA SET TRUE IS AUTH-NYA
-                    this.SET_IS_AUTH(true)
-                    //LALU REDIRECT KE HALAMAN UTAMA / DAHSBOARD
-                    this.$router.push('/')
-                })
-           }
+                this.loading = true;
+                    this.$auth.loginWith('local', {
+                        data: {
+                            username: this.auth.username,
+                            password: this.auth.password
+                        }
+                    }).then(() => {
+                        // console.log(this.$auth.user.name)
+                        this.$notify({
+                            group: 'auth',
+                            title: 'Berhasil Login!',
+                            text: 'Selamat datang '+this.$auth.user.name,
+                            type: 'success'
+                        })
+                        //JIKA BERHASIL, KITA SET TRUE IS AUTH-NYA
+                        this.SET_IS_AUTH(true)
+                        //LALU REDIRECT KE HALAMAN UTAMA / DAHSBOARD
+                        this.$router.push('/')
+                        this.loading = false
+                    }).catch((error) => {
+                        console.log(error)
+                        this.$swal({
+                            title: 'Gagal Login!',
+                            text: 'Terjadi Kesalahan, harap hubungi Admin!',
+                            type: 'error',
+                            showConfirmButton: false,
+                            toast: true,
+                            position: 'top',
+                            timer: 3500,
+                        })
+                        this.loading = false
+                    })
+           },
+
         }
     }
 </script>
